@@ -10,6 +10,8 @@
 // declare new maker event with (maker key, event name)
 DataToMaker event("bl6Mm_2AoLXuaTuRyFJlrR");
 
+bool ifttt_reporting = true;
+
 void ifttt_webhook(const char* eventname, bool success, const char* msg)
 {
   Serial.print(eventname);
@@ -17,6 +19,12 @@ void ifttt_webhook(const char* eventname, bool success, const char* msg)
   Serial.print(success ? F("ok") : F("fail"));
   Serial.print(": ");
   Serial.println(msg);
+
+  if (!ifttt_reporting)
+  {
+    Serial.println(F("Skip www reporting"));
+    return;
+  }
 
   // log message
   event.setValue(1, eventname);

@@ -110,6 +110,8 @@ void loop()
   int minutes = timeClient.getMinutes();
   if (minutes != minutes_previous) 
   {
+    ifttt_reporting = config.www_level > 1;
+    
     setYellow(LOW);
     minutes_previous = minutes;
     int hours = timeClient.getHours();
@@ -118,7 +120,7 @@ void loop()
     Serial.println(timeClient.getFormattedTime());
 
     // update config with configured interval
-    if (config.poll_interval_minutes > 0 && minutes % config.poll_interval_minutes == 0)
+    if (config.www_level > 1 && config.poll_interval_minutes > 0 && minutes % config.poll_interval_minutes == 0)
     {
       // get config
       if (getGoogleConfig(configTmp))
@@ -162,10 +164,10 @@ void loop()
     }
 
     // log status every X hours
-    if (hours%1 == 0 && minutes % 20 == 0)
+    if (config.www_level > 1 && hours%1 == 0 && minutes % 20 == 0)
     {
       char buf[40];
-      sprintf(buf, F("door: %s, config: %d minutes"), (doorIsOpen() ? "open" : (doorIsClosed()?"closed":"unknown")), minutesSinceConfigUpdate());
+      sprintf(buf, F("door: %s, config: %d min ago"), (doorIsOpen() ? "open" : (doorIsClosed()?"closed":"unknown")), minutesSinceConfigUpdate());
       ifttt_webhook(F("Status"), true, buf);
     }
   }

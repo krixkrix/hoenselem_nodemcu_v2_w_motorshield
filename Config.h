@@ -27,7 +27,7 @@ public:
   int poll_interval_minutes = 10;
   int force_open = 0;
   int force_close = 0;
-  int log_to_www = 1;
+  int www_level = 2;  // level 0=no use, 1=only initial config reading and log, 2=all
 
   const char* formatted() 
   {
@@ -92,7 +92,7 @@ bool getGoogleConfig(Config& config)
   newSecure.stop();
 
   int n = sscanf(payload.c_str(), 
-                F("open_hour,%d open_minutes,%d close_hour,%d close_minutes,%d poll_interval_minutes,%d force_open,%d force_close,%d log_to_www,%d"), 
+                F("open_hour,%d open_minutes,%d close_hour,%d close_minutes,%d poll_interval_minutes,%d force_open,%d force_close,%d www_level,%d"), 
                 &config.open_hour,
                 &config.open_minutes, 
                 &config.close_hour,
@@ -100,7 +100,7 @@ bool getGoogleConfig(Config& config)
                 &config.poll_interval_minutes,
                 &config.force_open,
                 &config.force_close,
-                &config.log_to_www);           
+                &config.www_level);           
  
  Serial.print(F("Got params: "));
  Serial.println(n);

@@ -21,7 +21,6 @@ const int DoorTimeoutMs = 60000;
 // door input resolution (limit switches, buttons, LEDs...)
 const int LoopSleep = 10;
 
-
 void startMove(int direction) 
 {
   digitalWrite(MotorADirPin, direction == 1);
