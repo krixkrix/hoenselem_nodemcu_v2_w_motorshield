@@ -31,6 +31,9 @@ int sequential_config_failures = 0;
 
 void setup()
 {
+  ESP.wdtDisable();
+  ESP.wdtEnable(WDTO_8S);
+  
   setupLEDs();
   
   Serial.begin(115200);
@@ -100,6 +103,7 @@ bool configIsTooOld()
 
 void loop() 
 {
+  ESP.wdtFeed();
   setYellow(HIGH);
   timeClient.update();
 
@@ -161,7 +165,7 @@ void loop()
     if (hours%1 == 0 && minutes % 20 == 0)
     {
       char buf[40];
-      sprintf(buf, F("%s: config age: %d minutes"), timeClient.getFormattedTime().c_str(), minutesSinceConfigUpdate());
+      sprintf(buf, F("door: %s, config: %d minutes"), (doorIsOpen() ? "open" : (doorIsClosed()?"closed":"unknown")), minutesSinceConfigUpdate());
       ifttt_webhook(F("Status"), true, buf);
     }
   }

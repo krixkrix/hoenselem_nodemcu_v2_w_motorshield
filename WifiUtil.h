@@ -51,7 +51,8 @@ bool connectWifi() {
 void checkWifi() {
   if (!connectWifi()) 
   {
-      ESP.reset();
+      // ESP.reset();
+      connectWifi();
   }
 }
 #endif
