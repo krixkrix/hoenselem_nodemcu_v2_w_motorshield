@@ -34,14 +34,16 @@ void setup()
   setupLEDs();
   
   Serial.begin(115200);
+  delay(500);
   WiFi.mode(WIFI_OFF);  // Prevents reconnection issue (taking too long to connect)
   delay(1000);
   WiFi.mode(WIFI_STA);  // Only Station No AP, This line hides the viewing of ESP as wifi hotspot
-  delay(1000);
-  while (!connectWifi())
-  {
-    delay(1000);
-  }
+  delay(500);
+  Serial.println();
+  Serial.println();
+  
+  connectWifi();
+  checkWifi();
   
   setYellow(HIGH);
   timeClient.begin();
@@ -114,7 +116,6 @@ void loop()
     // update config with configured interval
     if (config.poll_interval_minutes > 0 && minutes % config.poll_interval_minutes == 0)
     {
-      connectWifi();
       // get config
       if (getGoogleConfig(configTmp))
       {
@@ -157,10 +158,9 @@ void loop()
     }
 
     // log status every X hours
-    if (hours%1 == 0 && minutes == 0)
+    if (hours%1 == 0 && minutes % 20 == 0)
     {
-      connectWifi();
-      char buf[35];
+      char buf[40];
       sprintf(buf, F("%s: config age: %d minutes"), timeClient.getFormattedTime().c_str(), minutesSinceConfigUpdate());
       ifttt_webhook(F("Status"), true, buf);
     }

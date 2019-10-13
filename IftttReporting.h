@@ -18,8 +18,6 @@ void ifttt_webhook(const char* eventname, bool success, const char* msg)
   Serial.print(": ");
   Serial.println(msg);
 
-  connectWifi();
-
   // log message
   event.setValue(1, eventname);
   event.setValue(2, success ? F("ok") : F("fail"));

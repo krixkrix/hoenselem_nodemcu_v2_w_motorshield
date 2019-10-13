@@ -9,6 +9,7 @@
 
 
 #include <ESP8266WiFi.h>
+#include "WifiUtil.h"
 
 class DataToMaker
 {
@@ -38,6 +39,7 @@ DataToMaker::DataToMaker(const char* _privateKey)
 
 bool DataToMaker::connect()
 {
+  checkWifi();
   int r = 20;  // retries
   while ((!client.connect("maker.ifttt.com", 80)) && (r > 0)){
       delay(100);
@@ -49,6 +51,7 @@ bool DataToMaker::connect()
 
 void DataToMaker::post(const char* event)
 {
+  checkWifi();
   compileData();
   client.print(F("POST /trigger/"));
   client.print(event);

@@ -2,13 +2,14 @@
 #define GOOGLE_CONFIG_H
 
 #include <ESP8266HTTPClient.h>
+#include "WifiUtil.h"
 
 // config is stored in a public google spreadsheet
 // note the URL contains the doc ID , the modifier "format=csv", and a specific cell range
 
 const char* host = "docs.google.com";
 const int httpsPort = 443;
-const char* link = "/spreadsheets/d/1mWT1SBtN5EKl85kzLBuUofBARWZpKznMYA6NtNMP_4Q/export?gid=0&format=csv&range=A3:B9";  // The RANGE here is crucial
+const char* link = "/spreadsheets/d/1mWT1SBtN5EKl85kzLBuUofBARWZpKznMYA6NtNMP_4Q/export?gid=0&format=csv&range=A3:B10";  // The RANGE here is crucial
 char * latestError = "none";
 
 HTTPClient https;
@@ -26,6 +27,7 @@ public:
   int poll_interval_minutes = 10;
   int force_open = 0;
   int force_close = 0;
+  int log_to_www = 1;
 
   const char* formatted() 
   {
@@ -55,7 +57,8 @@ const String& getConfigError()
 }
 
 bool getGoogleConfig(Config& config)
-{    
+{ 
+  checkWifi();
   latestError = "";
 
   // do not use fingerprint since it will change over time
@@ -89,19 +92,20 @@ bool getGoogleConfig(Config& config)
   newSecure.stop();
 
   int n = sscanf(payload.c_str(), 
-                F("open_hour,%d open_minutes,%d close_hour,%d close_minutes,%d poll_interval_minutes,%d force_open,%d force_close,%d"), 
+                F("open_hour,%d open_minutes,%d close_hour,%d close_minutes,%d poll_interval_minutes,%d force_open,%d force_close,%d log_to_www,%d"), 
                 &config.open_hour,
                 &config.open_minutes, 
                 &config.close_hour,
                 &config.close_minutes,
                 &config.poll_interval_minutes,
                 &config.force_open,
-                &config.force_close);           
+                &config.force_close,
+                &config.log_to_www);           
  
  Serial.print(F("Got params: "));
  Serial.println(n);
 
- if (n!=7) 
+ if (n!=8) 
  {
    latestError =  "Parse failure";
    return false;
@@ -117,7 +121,7 @@ bool getGoogleConfig(Config& config)
      || config.open_minutes > 59
      || config.close_minutes < 0
      || config.close_minutes > 59
-     || n != 7)
+     || n != 8)
   {
     latestError = "Bad content";
     return false;

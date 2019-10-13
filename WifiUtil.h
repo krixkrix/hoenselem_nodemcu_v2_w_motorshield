@@ -48,5 +48,10 @@ bool connectWifi() {
   return WiFi.status() == WL_CONNECTED;
 }
 
-
+void checkWifi() {
+  if (!connectWifi()) 
+  {
+      ESP.reset();
+  }
+}
 #endif
