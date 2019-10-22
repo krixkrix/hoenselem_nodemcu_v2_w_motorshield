@@ -9,6 +9,7 @@
 #include "WifiUtil.h"
 #include "LedUtil.h"
 #include "DoorControl.h"
+#include "WatchdogUtil.h"
 
 WiFiUDP ntpUDP;
 
@@ -31,9 +32,6 @@ int sequential_config_failures = 0;
 
 void setup()
 {
-  ESP.wdtDisable();
-  ESP.wdtEnable(WDTO_8S);
-  
   setupLEDs();
   
   Serial.begin(115200);
@@ -44,6 +42,9 @@ void setup()
   delay(500);
   Serial.println();
   Serial.println();
+
+  /// start our own watchdog to restart after 60 seconds, e.g. if https client hangs as we often see
+  watchdog_start(60);
   
   connectWifi();
   checkWifi();
@@ -64,8 +65,6 @@ void setup()
     timeClient.update();
   }
 
-  ifttt_webhook(F("Boot"), true, ("Init "+timeClient.getFormattedTime()).c_str());
-
   doorStateInit();
 
 
@@ -77,17 +76,16 @@ void setup()
   config.close_minutes = config.open_minutes + 2;
   */
 
-  bool ok = getGoogleConfig(config);
-  
-  ifttt_webhook(F("Config"), ok, ok ? config.formatted() : getConfigError().c_str());
 
+  bool ok = getGoogleConfig(config);
+
+  char buf[100];
+  sprintf(buf, "%s, Door: %s", config.formatted(), doorStateStr());
+   
+  ifttt_webhook(F("Boot"), ok, buf);
   if (ok) 
   {
     unix_latest_config_update = timeClient.getEpochTime();
-  }
-  else 
-  {
-    ifttt_webhook(F("Fallback"), true, config.formatted());
   }
 }
 
@@ -103,7 +101,7 @@ bool configIsTooOld()
 
 void loop() 
 {
-  ESP.wdtFeed();
+  watchdog_reset();
   setYellow(HIGH);
   timeClient.update();
 
@@ -111,9 +109,9 @@ void loop()
   if (minutes != minutes_previous) 
   {
     ifttt_reporting = config.www_level > 1;
-    
     setYellow(LOW);
     minutes_previous = minutes;
+
     int hours = timeClient.getHours();
     
     Serial.print(F("Time is: "));
@@ -164,7 +162,7 @@ void loop()
     }
 
     // log status every X hours
-    if (config.www_level > 1 && hours%1 == 0 && minutes % 20 == 0)
+    if (config.www_level > 1 && hours%4 == 0 && minutes == 0)
     {
       char buf[40];
       sprintf(buf, F("door: %s, config: %d min ago"), (doorIsOpen() ? "open" : (doorIsClosed()?"closed":"unknown")), minutesSinceConfigUpdate());

@@ -167,5 +167,19 @@ bool doorClose()
   return true;
 }
 
+const char* doorStateStr()
+{
+  if (doorIsClosed())
+  {
+    return "closed";
+  }
+  else if (doorIsOpen()) 
+  {
+    return "open";
+  }
+  else {
+    return "unknown";
+  }
+}
 
 #endif

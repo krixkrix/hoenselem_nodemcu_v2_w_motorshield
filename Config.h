@@ -23,7 +23,7 @@ public:
   int open_hour = 7;
   int open_minutes = 30;
   int close_hour = 18;
-  int close_minutes = 45;
+  int close_minutes = 30;
   int poll_interval_minutes = 10;
   int force_open = 0;
   int force_close = 0;
