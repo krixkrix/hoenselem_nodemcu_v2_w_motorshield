@@ -43,8 +43,8 @@ void setup()
   Serial.println();
   Serial.println();
 
-  /// start our own watchdog to restart after 60 seconds, e.g. if https client hangs as we often see
-  watchdog_start(60);
+  /// initialise our own watchdog to restart after N seconds, e.g. if https client hangs as we often see
+  watchdog_start(90);
   
   connectWifi();
   checkWifi();
