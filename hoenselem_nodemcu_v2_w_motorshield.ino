@@ -1,4 +1,4 @@
-// Project intended for board: "WeMos D1 R1"
+// Project intended for board: "NodeMcu 1.0 (ESP-12E Module)"
 #include <SD.h>
 
 #include <NTPClient.h>

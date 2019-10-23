@@ -1,6 +1,8 @@
 #ifndef DOOR_CONTROL_H
 #define DOOR_CONTROL_H
 
+#include "WatchdogUtil.h"
+
 // PINs motor
 const int MotorADirPin = D3;
 const int MotorASpeedPin = D1;
@@ -19,7 +21,7 @@ int latestDirection = -1;  // set latest direction down, so the first button-ini
 const int DoorTimeoutMs = 60000;
 
 // door input resolution (limit switches, buttons, LEDs...)
-const int LoopSleep = 10;
+const int LoopSleep = 5;
 
 void startMove(int direction) 
 {
@@ -90,6 +92,7 @@ bool doorOpen()
     }
     if (doorIsOpen())
     {
+      delay(10);  // hesitate to ensure switch is properly engaged
       break;
     }
     if (doorButtonPressed() && dt > 500) 
@@ -99,6 +102,7 @@ bool doorOpen()
       break;
     }
     delay(LoopSleep);
+    watchdog_reset();
   }
   stopMove();
   setYellow(LOW);
@@ -138,6 +142,7 @@ bool doorClose()
     }
     if (doorIsClosed())
     {
+      delay(10);  // hesitate to ensure switch is properly engaged
       break;
     }
     if (doorButtonPressed() && dt > 500)
@@ -147,6 +152,7 @@ bool doorClose()
       break;
     }
     delay(LoopSleep);
+    watchdog_reset();
   }
   stopMove();
   setYellow(LOW);
