@@ -9,7 +9,7 @@
 
 const char* host = "docs.google.com";
 const int httpsPort = 443;
-const char* link = "/spreadsheets/d/1mWT1SBtN5EKl85kzLBuUofBARWZpKznMYA6NtNMP_4Q/export?gid=0&format=csv&range=A3:B10";  // The RANGE here is crucial
+const char* link = "/spreadsheets/d/1mWT1SBtN5EKl85kzLBuUofBARWZpKznMYA6NtNMP_4Q/export?gid=0&format=csv&range=A3:B9";  // The RANGE here is crucial
 char * latestError = "none";
 
 HTTPClient https;
@@ -27,7 +27,6 @@ public:
   int poll_interval_minutes = 10;
   int force_open = 0;
   int force_close = 0;
-  int www_level = 2;  // level 0=no use, 1=only initial config reading and log, 2=all
 
   const char* formatted() 
   {
@@ -92,20 +91,19 @@ bool getGoogleConfig(Config& config)
   newSecure.stop();
 
   int n = sscanf(payload.c_str(), 
-                F("open_hour,%d open_minutes,%d close_hour,%d close_minutes,%d poll_interval_minutes,%d force_open,%d force_close,%d www_level,%d"), 
+                F("open_hour,%d open_minutes,%d close_hour,%d close_minutes,%d poll_interval_minutes,%d force_open,%d force_close,%d"), 
                 &config.open_hour,
                 &config.open_minutes, 
                 &config.close_hour,
                 &config.close_minutes,
                 &config.poll_interval_minutes,
                 &config.force_open,
-                &config.force_close,
-                &config.www_level);           
+                &config.force_close);         
  
  Serial.print(F("Got params: "));
  Serial.println(n);
 
- if (n!=8) 
+ if (n!=7) 
  {
    latestError =  "Parse failure";
    return false;
@@ -120,8 +118,7 @@ bool getGoogleConfig(Config& config)
      || config.open_minutes < 0 
      || config.open_minutes > 59
      || config.close_minutes < 0
-     || config.close_minutes > 59
-     || n != 8)
+     || config.close_minutes > 59)
   {
     latestError = "Bad content";
     return false;
