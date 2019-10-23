@@ -117,7 +117,7 @@ void loop()
     Serial.println(timeClient.getFormattedTime());
 
     // update config with configured interval
-    if (config.poll_interval_minutes > 0 && minutes % config.poll_interval_minutes == 0)
+    if (config.poll_interval_minutes > 0 && (minutes % config.poll_interval_minutes == 0 || configIsTooOld()))
     {
       // get config
       if (getGoogleConfig(configTmp))

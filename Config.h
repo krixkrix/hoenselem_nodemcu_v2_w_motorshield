@@ -22,8 +22,8 @@ class Config {
 public:
   int open_hour = 7;
   int open_minutes = 30;
-  int close_hour = 18;
-  int close_minutes = 30;
+  int close_hour = 19;
+  int close_minutes = 00;
   int poll_interval_minutes = 10;
   int force_open = 0;
   int force_close = 0;
@@ -72,7 +72,7 @@ bool getGoogleConfig(Config& config)
     newSecure.stop();
     Serial.print(F("Https failed, code: "));
     Serial.println(code);
-    latestError = F("connect failure");
+    latestError = "Connect failure";
     return false;
   }
   
