@@ -30,6 +30,8 @@ int minutes_previous = -1;
 unsigned long unix_latest_config_update = 0;
 int sequential_config_failures = 0;
 
+const char compile_date[] = __DATE__ " " __TIME__;
+
 void setup()
 {
   setupLEDs();
@@ -80,7 +82,7 @@ void setup()
   bool ok = getGoogleConfig(config);
 
   char buf[100];
-  sprintf(buf, "%s, Door: %s", config.formatted(), doorStateStr());
+  sprintf(buf, "%s, Door: %s, Build: %s", config.formatted(), doorStateStr(), compile_date);
    
   ifttt_webhook(F("Boot"), ok, buf);
   if (ok) 
