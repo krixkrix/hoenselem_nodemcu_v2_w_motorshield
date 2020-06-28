@@ -63,6 +63,7 @@ bool getGoogleConfig(Config& config)
   // do not use fingerprint since it will change over time
   Serial.println(F("HTTPS connect"));
   newSecure.setInsecure();
+  https.setFollowRedirects(true);
   https.begin(newSecure, host, httpsPort, link, true);
 
   int code = https.GET();
