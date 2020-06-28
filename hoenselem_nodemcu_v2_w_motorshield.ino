@@ -18,8 +18,7 @@ WiFiUDP ntpUDP;
  */
 const char* poolServerName = "0.dk.pool.ntp.org";
 const int UPDATE_INTERVAL_HOURS = 5;
-const int TIMEZONE_OFFSET_HOURS = 1;
-NTPClient timeClient(ntpUDP, poolServerName, TIMEZONE_OFFSET_HOURS*3600, UPDATE_INTERVAL_HOURS*60*60*1000);
+NTPClient timeClient(ntpUDP, poolServerName);
 
 // Configuration synced from web
 Config config;
@@ -52,6 +51,7 @@ void setup()
   checkWifi();
   
   setYellow(HIGH);
+  timeClient.setUpdateInterval(UPDATE_INTERVAL_HOURS*60*60*1000);
   timeClient.begin();
   setYellow(LOW);
 
@@ -78,8 +78,8 @@ void setup()
   config.close_minutes = config.open_minutes + 2;
   */
 
-
   bool ok = getGoogleConfig(config);
+  timeClient.setTimeOffset(config.time_offset_hours*3600);
 
   char buf[100];
   sprintf(buf, "%s, Door: %s, Build: %s", config.formatted(), doorStateStr(), compile_date);
@@ -129,6 +129,7 @@ void loop()
         if (!config.equals(configTmp))
         {
           config = configTmp;
+          timeClient.setTimeOffset(config.time_offset_hours*3600);
           ifttt_webhook(F("Config"), true, config.formatted());
         }
       }
