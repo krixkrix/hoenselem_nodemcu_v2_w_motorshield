@@ -18,7 +18,7 @@ WiFiUDP ntpUDP;
  */
 const char* poolServerName = "0.dk.pool.ntp.org";
 const int UPDATE_INTERVAL_HOURS = 5;
-const int TIMEZONE_OFFSET_HOURS = 2;
+const int TIMEZONE_OFFSET_HOURS = 1;
 NTPClient timeClient(ntpUDP, poolServerName, TIMEZONE_OFFSET_HOURS*3600, UPDATE_INTERVAL_HOURS*60*60*1000);
 
 // Configuration synced from web
