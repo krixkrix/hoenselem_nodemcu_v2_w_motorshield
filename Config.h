@@ -12,6 +12,14 @@ const int httpsPort = 443;
 const char* link = "/spreadsheets/d/1mWT1SBtN5EKl85kzLBuUofBARWZpKznMYA6NtNMP_4Q/export?gid=0&format=csv&range=A3:B10";  // The RANGE here is crucial
 char * latestError = "none";
 
+/* Testing with curl (remember the quotes): 
+ *  curl -L "https://docs.google.com/spreadsheets/d/1mWT1SBtN5EKl85kzLBuUofBARWZpKznMYA6NtNMP_4Q/export?gid=0&format=csv&range=A3:B10"
+ *  
+ *  Consider if using google web app would be better
+ *  A proof of concept is executed on this URL
+ *  curl -L https://script.google.com/macros/s/AKfycbzVvEIAu9txKl-rJPk7JmCums9h9JS-RLfYtAD0MIlFRbKORjs/exec
+ */
+
 HTTPClient https;
 BearSSL::WiFiClientSecure newSecure;
 
