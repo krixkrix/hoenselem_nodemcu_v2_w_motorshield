@@ -28,11 +28,11 @@ static char cbuf[50];
 class Config {
 
 public:
-  int open_hour = 7;
-  int open_minutes = 10;
-  int close_hour = 19;
-  int close_minutes = 10;
-  int time_offset_hours = 1;
+  int open_hour = 6;
+  int open_minutes = 55;
+  int close_hour = 22;
+  int close_minutes = 40;
+  int time_offset_hours = 2;
   int poll_interval_minutes = 10;
   int force_open = 0;
   int force_close = 0;
