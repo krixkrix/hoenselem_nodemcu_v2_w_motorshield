@@ -32,7 +32,7 @@ void ifttt_webhook(const char* eventname, bool success, const char* msg)
   event.setValue(3, msg);
   if (event.connect())
   {
-    event.post(F("chickendoor"));
+    event.post("chickendoor");
   }
   else 
   {
@@ -44,7 +44,7 @@ void ifttt_webhook(const char* eventname, bool success, const char* msg)
   {
     if (event.connect())
     {
-      event.post(F("chickendoor_error"));
+      event.post("chickendoor_error");
     }
     else 
     {
@@ -55,12 +55,12 @@ void ifttt_webhook(const char* eventname, bool success, const char* msg)
 
 void report_door_closed(bool ok, const char* msg)
 {
-  ifttt_webhook(F("Door close"), ok, msg);
+  ifttt_webhook("Door close", ok, msg);
 }
 
 void report_door_open(bool ok, const char* msg)
 {
-  ifttt_webhook(F("Door open"), ok, msg);
+  ifttt_webhook("Door open", ok, msg);
 }
 
 #endif

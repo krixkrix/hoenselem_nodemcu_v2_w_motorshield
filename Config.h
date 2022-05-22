@@ -1,3 +1,5 @@
+#include <dummy.h>
+
 #ifndef GOOGLE_CONFIG_H
 #define GOOGLE_CONFIG_H
 
@@ -39,7 +41,7 @@ public:
 
   const char* formatted() 
   {
-    sprintf(cbuf, F("Open: %02d:%02d, Close: %02d:%02d, TZ: %+dh, Poll: %d"), open_hour, open_minutes, close_hour, close_minutes, time_offset_hours, poll_interval_minutes);
+    sprintf(cbuf, "Open: %02d:%02d, Close: %02d:%02d, TZ: %+dh, Poll: %d", open_hour, open_minutes, close_hour, close_minutes, time_offset_hours, poll_interval_minutes);
     return cbuf;
   }
 
@@ -73,7 +75,7 @@ bool getGoogleConfig(Config& config)
   // do not use fingerprint since it will change over time
   Serial.println(F("HTTPS connect"));
   newSecure.setInsecure();
-  https.setFollowRedirects(true);
+  https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
   https.begin(newSecure, host, httpsPort, link, true);
 
   int code = https.GET();
@@ -102,7 +104,7 @@ bool getGoogleConfig(Config& config)
   newSecure.stop();
 
   int n = sscanf(payload.c_str(), 
-                F("open_hour,%d open_minutes,%d close_hour,%d close_minutes,%d time_offset_hours,%d poll_interval_minutes,%d force_open,%d force_close,%d"), 
+                "open_hour,%d open_minutes,%d close_hour,%d close_minutes,%d time_offset_hours,%d poll_interval_minutes,%d force_open,%d force_close,%d", 
                 &config.open_hour,
                 &config.open_minutes, 
                 &config.close_hour,

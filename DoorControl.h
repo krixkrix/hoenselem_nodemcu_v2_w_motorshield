@@ -55,9 +55,13 @@ bool doorIsOpen()
   return digitalRead(LimitTopPin) == 1;
 }
 
-
 void doorStateInit() 
 {
+
+  pinMode(LimitBotPin, INPUT);
+  pinMode(LimitTopPin, INPUT);
+  pinMode(ButtonPin, INPUT);
+    
   // initial settings for motors off and direction forward
   pinMode(MotorASpeedPin, OUTPUT);
   pinMode(MotorADirPin, OUTPUT);
@@ -109,16 +113,16 @@ bool doorOpen()
 
   if (!doorIsOpen())
   {
-    report_door_open(false, F("ERROR: open switch NOT active"));
+    report_door_open(false, "ERROR: open switch NOT active");
     return false;
   }
   if (doorIsClosed())
   {
-    report_door_open(false, F("ERROR: closed switch active"));
+    report_door_open(false, "ERROR: closed switch active");
     return false;
   }
   
-  report_door_open(true, F("Door now open"));
+  report_door_open(true, "Door now open");
   delay(500);
   return true;
 }
@@ -159,16 +163,16 @@ bool doorClose()
 
   if (!doorIsClosed())
   {
-    report_door_closed(false, F("ERROR: closed switch NOT active"));
+    report_door_closed(false, "ERROR: closed switch NOT active");
     return false;
   }
   if (doorIsOpen())
   {
-    report_door_closed(false, F("ERROR: open switch active"));
+    report_door_closed(false, "ERROR: open switch active");
     return false;
   }
   
-  report_door_closed(true, F("Door now closed"));
+  report_door_closed(true, "Door now closed");
   delay(500);
   return true;
 }

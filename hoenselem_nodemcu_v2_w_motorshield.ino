@@ -34,6 +34,7 @@ const char compile_date[] = __DATE__ " " __TIME__;
 void setup()
 {
   setupLEDs();
+  setYellow(HIGH);
   
   Serial.begin(115200);
   delay(500);
@@ -84,7 +85,7 @@ void setup()
   char buf[100];
   sprintf(buf, "%s, Door: %s, Build: %s", config.formatted(), doorStateStr(), compile_date);
    
-  ifttt_webhook(F("Boot"), ok, buf);
+  ifttt_webhook("Boot", ok, buf);
   if (ok) 
   {
     unix_latest_config_update = timeClient.getEpochTime();
@@ -130,7 +131,7 @@ void loop()
         {
           config = configTmp;
           timeClient.setTimeOffset(config.time_offset_hours*3600);
-          ifttt_webhook(F("Config"), true, config.formatted());
+          ifttt_webhook("Config", true, config.formatted());
         }
       }
       else {
@@ -139,7 +140,7 @@ void loop()
         Serial.println(getConfigError().c_str());
         if (sequential_config_failures % 10 == 0)
         {
-          ifttt_webhook(F("Config"), false, getConfigError().c_str());
+          ifttt_webhook("Config", false, getConfigError().c_str());
         }
       }
     }
@@ -153,7 +154,6 @@ void loop()
       doorClose();
     }
     
-  
     if (config.open_hour == hours && config.open_minutes <= minutes) 
     {
       doorOpen();
@@ -167,8 +167,8 @@ void loop()
     if (hours%4 == 0 && minutes == 0)
     {
       char buf[40];
-      sprintf(buf, F("door: %s, config: %d min ago"), doorStateStr(), minutesSinceConfigUpdate());
-      ifttt_webhook(F("Status"), true, buf);
+      sprintf(buf, "door: %s, config: %d min ago", doorStateStr(), minutesSinceConfigUpdate());
+      ifttt_webhook("Status", true, buf);
     }
   }
 
