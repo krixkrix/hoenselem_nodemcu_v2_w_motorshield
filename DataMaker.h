@@ -1,15 +1,13 @@
 #ifndef IFTTT_DATAMAKER_H
 #define IFTTT_DATAMAKER_H
 
-/**
- * Class to build and send a HTTP post request to ifttt webhook
- * copied from
- * https://github.com/mylob/ESP-To-IFTTT/blob/master/ESP8266_To_IFTTT/DataToMaker.h
- */
-
-
 #include <ESP8266WiFi.h>
 #include "WifiUtil.h"
+
+const char* hostname = "script.google.com";
+String webAppPath = "/macros/s/AKfycbwLtmuWB670MzO2I73ylLMlNiuXO5tbu13_FY6MD99QYL1Bk72zODJYBVTODsBZuUE4/exec";
+const int port = 443;
+
 
 class DataToMaker
 {
@@ -25,7 +23,8 @@ class DataToMaker
 
   private:
     void compileData();
-    WiFiClient client;
+    // WiFi client for HTTPS
+    WiFiClientSecure client;
     const char* privateKey;
     String value1, value2, value3 = "";
     bool dataAvailable;
@@ -41,7 +40,11 @@ bool DataToMaker::connect()
 {
   checkWifi();
   int r = 20;  // retries
-  while ((!client.connect("maker.ifttt.com", 80)) && (r > 0)){
+
+  // Set insecure mode (skips SSL certificate validation)
+  client.setInsecure(); 
+  
+  while ((!client.connect(hostname, port)) && (r > 0)){
       delay(100);
       Serial.print("*");
       r--;
@@ -53,25 +56,56 @@ void DataToMaker::post(const char* event)
 {
   checkWifi();
   compileData();
-  client.print(F("POST /trigger/"));
-  client.print(event);
-  client.print(F("/with/key/"));
-  client.print(privateKey);
-  client.println(F(" HTTP/1.1"));
 
-  client.println(F("Host: maker.ifttt.com"));
-  client.println(F("User-Agent: Arduino/1.0"));
-  client.println(F("Connection: close"));
-  if (dataAvailable)
-  { // append json values if available
-    client.println(F("Content-Type: application/json"));
-    client.print(F("Content-Length: "));
-    client.println(postData.length());
-    client.println();
-    client.println(postData);
+  // Send HTTP POST request
+  client.println("POST " + webAppPath + " HTTP/1.1");
+  client.println("Host: script.google.com");
+  client.println("Content-Type: application/json");
+  client.print("Content-Length: ");
+  client.println(postData.length());
+  client.println();
+  client.println(postData);
+
+  // Wait for response
+  Serial.println("Data sent, waiting for response...");
+
+  // Read the HTTP response
+  int httpResponseCode = -1;
+  String response = "";
+  while (client.connected()) {
+      String line = client.readStringUntil('\n');
+      if (line.startsWith("HTTP/1.1")) {
+          httpResponseCode = line.substring(9, 12).toInt();  // Extract status code
+      }
+      if (line == "\r") {
+          break;  // End of headers
+      }
   }
-  else
-    client.println();
+
+  // Read the response body
+  while (client.available()) {
+      response += client.readString();
+  }
+
+  Serial.print("HTTP Response Code: ");
+  Serial.print(httpResponseCode);
+  Serial.print(" ");
+
+  if (httpResponseCode == 200) {
+    Serial.println("OK");
+  }
+  else if (httpResponseCode == 302) {
+    Serial.println("Redirected (OK)");
+  }
+  else {
+    Serial.println(" FAILURE");
+    Serial.println("Response Body: ");
+    Serial.println(response);
+    Serial.println("");
+  }
+  
+  Serial.println("Closing connection.");
+  client.stop();
 }
 
 bool DataToMaker::setValue(int valueToSet, String value)
