@@ -5,7 +5,7 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include "Config.h"
-#include "IftttReporting.h"
+#include "WebReporting.h"
 #include "WifiUtil.h"
 #include "LedUtil.h"
 #include "DoorControl.h"
@@ -85,7 +85,7 @@ void setup()
   char buf[100];
   sprintf(buf, "%s, Door: %s, Build: %s", config.formatted(), doorStateStr(), compile_date);
    
-  ifttt_webhook("Boot", ok, buf);
+  web_logger("Boot", ok, buf);
   if (ok) 
   {
     unix_latest_config_update = timeClient.getEpochTime();
@@ -131,7 +131,7 @@ void loop()
         {
           config = configTmp;
           timeClient.setTimeOffset(config.time_offset_hours*3600);
-          ifttt_webhook("Config", true, config.formatted());
+          web_logger("Config", true, config.formatted());
         }
       }
       else {
@@ -140,7 +140,7 @@ void loop()
         Serial.println(getConfigError().c_str());
         if (sequential_config_failures % 10 == 0)
         {
-          ifttt_webhook("Config", false, getConfigError().c_str());
+          web_logger("Config", false, getConfigError().c_str());
         }
       }
     }
@@ -168,7 +168,7 @@ void loop()
     {
       char buf[40];
       sprintf(buf, "door: %s, config: %d min ago", doorStateStr(), minutesSinceConfigUpdate());
-      ifttt_webhook("Status", true, buf);
+      web_logger("Status", true, buf);
     }
   }
 

@@ -1,18 +1,15 @@
-#ifndef IFTTT_REPORTING_H
-#define IFTTT_REPORTING_H
+#ifndef WEB_REPORTING_H
+#define WEB_REPORTING_H
 
-#include "DataMaker.h"
+#include "HttpsDataManager.h"
 #include "WifiUtil.h"
 
-// curl test expression
-// curl --header "Content-Type: application/json" --request POST --data '{"value1":"xyz","value2":"another value"}' http://maker.ifttt.com/trigger/chickendoor/with/key/bl6Mm_2AoLXuaTuRyFJlrR
-
 // declare new maker event with (maker key, event name)
-DataToMaker event("bl6Mm_2AoLXuaTuRyFJlrR");
+HttpsDataManager event("bl6Mm_2AoLXuaTuRyFJlrR");
 
-bool ifttt_reporting = true;
+bool web_reporting = true;
 
-void ifttt_webhook(const char* eventname, bool success, const char* msg)
+void web_logger(const char* eventname, bool success, const char* msg)
 {
   Serial.print(eventname);
   Serial.print(": ");
@@ -20,7 +17,7 @@ void ifttt_webhook(const char* eventname, bool success, const char* msg)
   Serial.print(": ");
   Serial.println(msg);
 
-  if (!ifttt_reporting)
+  if (!web_reporting)
   {
     Serial.println(F("Skip www reporting"));
     return;
@@ -36,7 +33,7 @@ void ifttt_webhook(const char* eventname, bool success, const char* msg)
   }
   else 
   {
-    Serial.println(F("Failed to connect IFTTTr"));
+    Serial.println(F("Failed to post to web"));
   }
 
   // special notification when error
@@ -48,19 +45,19 @@ void ifttt_webhook(const char* eventname, bool success, const char* msg)
     }
     else 
     {
-      Serial.println(F("Failed to connect IFTTT2"));
+      Serial.println(F("Failed to post the data"));
     }
   }
 }
 
 void report_door_closed(bool ok, const char* msg)
 {
-  ifttt_webhook("Door close", ok, msg);
+  web_logger("Door close", ok, msg);
 }
 
 void report_door_open(bool ok, const char* msg)
 {
-  ifttt_webhook("Door open", ok, msg);
+  web_logger("Door open", ok, msg);
 }
 
-#endif
+#endif  // WEB_REPORTING_H
