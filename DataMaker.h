@@ -58,6 +58,8 @@ void DataToMaker::post(const char* event)
   compileData();
 
   // Send HTTP POST request
+  // Similar can be test using curl: 
+  // curl -X POST -H "Content-Type: application/json" -d '{"value1":"somevalue1","value2": "another item","value3":"some text provided"}' "https://script.google.com/macros/s/AKfycbwLtmuWB670MzO2I73ylLMlNiuXO5tbu13_FY6MD99QYL1Bk72zODJYBVTODsBZuUE4/exec"
   client.println("POST " + webAppPath + " HTTP/1.1");
   client.println("Host: script.google.com");
   client.println("Content-Type: application/json");
