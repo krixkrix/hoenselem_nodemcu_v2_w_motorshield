@@ -4,22 +4,15 @@
 #include <ESP8266WiFi.h>  // for the pins definitions
 
 // PINs
-const int YellowLED = D5;  
+const int YellowLED = D5;
 
-void setupLEDs()
-{
+void setupLEDs() {
   pinMode(YellowLED, OUTPUT);
   digitalWrite(YellowLED, LOW);
 }
 
-void toggleYellow()
-{
-  digitalWrite(YellowLED, !digitalRead(YellowLED));
-}
+void toggleYellow() { digitalWrite(YellowLED, !digitalRead(YellowLED)); }
 
-void setYellow(int on)
-{
-    digitalWrite(YellowLED, on);
-}
+void setYellow(int on) { digitalWrite(YellowLED, on); }
 
 #endif

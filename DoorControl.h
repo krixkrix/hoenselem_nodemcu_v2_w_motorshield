@@ -2,6 +2,7 @@
 #define DOOR_CONTROL_H
 
 #include "WatchdogUtil.h"
+#include "WebReporting.h"
 
 // PINs motor
 const int MotorADirPin = D3;
@@ -16,91 +17,68 @@ const int ButtonPin = D8;
 // door states
 
 bool isMoving = false;
-int latestDirection = -1;  // set latest direction down, so the first button-initiated move will be up
+int latestDirection = -1;  // set latest direction down, so the first
+                           // button-initiated move will be up
 
 const int DoorTimeoutMs = 60000;
 
 // door input resolution (limit switches, buttons, LEDs...)
 const int LoopSleep = 5;
 
-void startMove(int direction) 
-{
+void startMove(int direction) {
   digitalWrite(MotorADirPin, direction == 1);
   analogWrite(MotorASpeedPin, Speed);
   isMoving = true;
   latestDirection = direction;
 }
 
-void stopMove()
-{
+void stopMove() {
   digitalWrite(MotorASpeedPin, LOW);
   isMoving = false;
 }
 
-bool doorIsMoving() 
-{
-  return isMoving;
-}
+bool doorIsMoving() { return isMoving; }
 
-int getDoorLatestDirection(){
-  return latestDirection;
-}
+int getDoorLatestDirection() { return latestDirection; }
 
-bool doorIsClosed()
-{
-  return digitalRead(LimitBotPin) == 1;
-}
-bool doorIsOpen()
-{
-  return digitalRead(LimitTopPin) == 1;
-}
+bool doorIsClosed() { return digitalRead(LimitBotPin) == 1; }
+bool doorIsOpen() { return digitalRead(LimitTopPin) == 1; }
 
-void doorStateInit() 
-{
-
+void doorStateInit() {
   pinMode(LimitBotPin, INPUT);
   pinMode(LimitTopPin, INPUT);
   pinMode(ButtonPin, INPUT);
-    
+
   // initial settings for motors off and direction forward
   pinMode(MotorASpeedPin, OUTPUT);
   pinMode(MotorADirPin, OUTPUT);
- 
+
   digitalWrite(MotorASpeedPin, LOW);
   digitalWrite(MotorADirPin, HIGH);
-  
+
   latestDirection = 1;
   stopMove();
 }
 
-bool doorButtonPressed()
-{
-  return digitalRead(ButtonPin) == 1;
-}
+bool doorButtonPressed() { return digitalRead(ButtonPin) == 1; }
 
-bool doorOpen() 
-{
-  if (doorIsOpen())
-  {
+bool doorOpen() {
+  if (doorIsOpen()) {
     Serial.println(F("already open"));
     return true;
   }
   Serial.println(F("opening door"));
   startMove(1);
-  for (int dt = 0; dt < DoorTimeoutMs; dt+=LoopSleep) 
-  {
-    if (dt%500 == 0) 
-    {
-      Serial.print("o"); 
+  for (int dt = 0; dt < DoorTimeoutMs; dt += LoopSleep) {
+    if (dt % 500 == 0) {
+      Serial.print("o");
       toggleYellow();
     }
-    if (doorIsOpen())
-    {
+    if (doorIsOpen()) {
       delay(10);  // hesitate to ensure switch is properly engaged
       break;
     }
-    if (doorButtonPressed() && dt > 500) 
-    {
+    if (doorButtonPressed() && dt > 500) {
       // cancel the move
       Serial.println(F("Cancel open"));
       break;
@@ -111,46 +89,38 @@ bool doorOpen()
   stopMove();
   setYellow(LOW);
 
-  if (!doorIsOpen())
-  {
+  if (!doorIsOpen()) {
     report_door_open(false, "ERROR: open switch NOT active");
     return false;
   }
-  if (doorIsClosed())
-  {
+  if (doorIsClosed()) {
     report_door_open(false, "ERROR: closed switch active");
     return false;
   }
-  
+
   report_door_open(true, "Door now open");
   delay(500);
   return true;
 }
 
-bool doorClose() 
-{
-  if (doorIsClosed())
-  {
+bool doorClose() {
+  if (doorIsClosed()) {
     Serial.println(F("already closed"));
     return true;
   }
-  
+
   Serial.println(F("closing door"));
   startMove(-1);
-  for (int dt = 0; dt < DoorTimeoutMs; dt+=LoopSleep) 
-  {
-    if (dt%500 == 0) 
-    {
+  for (int dt = 0; dt < DoorTimeoutMs; dt += LoopSleep) {
+    if (dt % 500 == 0) {
       Serial.print("c");
       toggleYellow();
     }
-    if (doorIsClosed())
-    {
+    if (doorIsClosed()) {
       delay(10);  // hesitate to ensure switch is properly engaged
       break;
     }
-    if (doorButtonPressed() && dt > 500)
-    {
+    if (doorButtonPressed() && dt > 500) {
       // cancel the move
       Serial.println(F("Cancel close"));
       break;
@@ -161,33 +131,26 @@ bool doorClose()
   stopMove();
   setYellow(LOW);
 
-  if (!doorIsClosed())
-  {
+  if (!doorIsClosed()) {
     report_door_closed(false, "ERROR: closed switch NOT active");
     return false;
   }
-  if (doorIsOpen())
-  {
+  if (doorIsOpen()) {
     report_door_closed(false, "ERROR: open switch active");
     return false;
   }
-  
+
   report_door_closed(true, "Door now closed");
   delay(500);
   return true;
 }
 
-const char* doorStateStr()
-{
-  if (doorIsClosed())
-  {
+const char* doorStateStr() {
+  if (doorIsClosed()) {
     return "closed";
-  }
-  else if (doorIsOpen()) 
-  {
+  } else if (doorIsOpen()) {
     return "open";
-  }
-  else {
+  } else {
     return "unknown";
   }
 }
