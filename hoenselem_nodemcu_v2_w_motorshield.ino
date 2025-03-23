@@ -1,7 +1,6 @@
 // Project intended for board: "NodeMcu 1.0 (ESP-12E Module)"
 #include <SD.h>
 
-#include <NTPClient.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include "Config.h"
@@ -10,15 +9,9 @@
 #include "LedUtil.h"
 #include "DoorControl.h"
 #include "WatchdogUtil.h"
+#include "TimeClient.h"
 
-WiFiUDP ntpUDP;
-
-/**
- * NTP setup
- */
-const char* poolServerName = "0.dk.pool.ntp.org";
-const int UPDATE_INTERVAL_HOURS = 5;
-NTPClient timeClient(ntpUDP, poolServerName);
+TimeClient timeClient;
 
 // Configuration synced from web
 Config config;
@@ -33,10 +26,11 @@ const char compile_date[] = __DATE__ " " __TIME__;
 
 void setup()
 {
+  Serial.begin(115200);
+  Serial.println("=========== Chicken door ===========");
   setupLEDs();
   setYellow(HIGH);
   
-  Serial.begin(115200);
   delay(500);
   WiFi.mode(WIFI_OFF);  // Prevents reconnection issue (taking too long to connect)
   delay(1000);
@@ -45,29 +39,17 @@ void setup()
   Serial.println();
   Serial.println();
 
-  /// initialise our own watchdog to restart after N seconds, e.g. if https client hangs as we often see
+  /// initialise watchdog to restart the device after N seconds, e.g. if https client hangs as we often see
   watchdog_start(90);
   
   connectWifi();
   checkWifi();
   
   setYellow(HIGH);
-  timeClient.setUpdateInterval(UPDATE_INTERVAL_HOURS*60*60*1000);
-  timeClient.begin();
+  timeClient.initialize();
   setYellow(LOW);
 
-  timeClient.forceUpdate();
-
-  // sometimes the first timestamp is wrong...?
-  for (int i=0; i<2; i++)
-  {
-    Serial.println();
-    Serial.print(F("Time is: "));
-    Serial.println(timeClient.getFormattedTime());
-    delay(200);  
-    timeClient.update();
-  }
-
+  timeClient.printTime();
   doorStateInit();
 
 
@@ -106,18 +88,17 @@ void loop()
 {
   watchdog_reset();
   setYellow(HIGH);
-  timeClient.update();
 
+  timeClient.update();
   int minutes = timeClient.getMinutes();
-  if (minutes != minutes_previous) 
+  int hours = timeClient.getHours();
+
+  if (minutes != minutes_previous)
   {
     setYellow(LOW);
     minutes_previous = minutes;
 
-    int hours = timeClient.getHours();
-    
-    Serial.print(F("Time is: "));
-    Serial.println(timeClient.getFormattedTime());
+    timeClient.printTime();
 
     // update config with configured interval
     if (config.poll_interval_minutes > 0 && (minutes % config.poll_interval_minutes == 0 || configIsTooOld()))

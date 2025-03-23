@@ -3,7 +3,7 @@
 
 /**
  * Homemade watchdog.
- * If watchdog reset has not been called with the <_reset_limit> seconds, then
+ * If watchdog reset has not been called within the <_reset_limit> seconds, then
  * the system will reset
  */
 
@@ -30,7 +30,7 @@ void watchdog_start(int reset_limit)
   }
 }
 
-void watchdog_reset()
+inline void watchdog_reset()
 {
   _heartbeat_count = 0;
 }

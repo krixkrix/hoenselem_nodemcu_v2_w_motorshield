@@ -1,6 +1,7 @@
 #ifndef LED_UTIL_H
 #define LED_UTIL_H
 
+#include <ESP8266WiFi.h>  // for the pins definitions
 
 // PINs
 const int YellowLED = D5;  
