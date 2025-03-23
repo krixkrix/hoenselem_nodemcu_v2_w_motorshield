@@ -8,7 +8,7 @@ Please create a file Secrets.h with your Wifi Credentials, like this:
 const char* ssid = "YOUR-SSID";
 const char* password = "YOUR_PASSWORD";
 
-DO NOT submit the file to GIT
+DO NOT submit the Secrets.h file to GIT
 */
 #include "Secrets.h"
 

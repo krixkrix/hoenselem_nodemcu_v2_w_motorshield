@@ -10,17 +10,15 @@
 #include "WatchdogUtil.h"
 #include "WebReporting.h"
 #include "WifiUtil.h"
+#include "ConfigUpdateTracker.h"
 
 TimeClient timeClient;
 
 // Configuration synced from web
 Config config;
-Config configTmp;
 
 // working variables
 int minutes_previous = -1;
-unsigned long unix_latest_config_update = 0;
-int sequential_config_failures = 0;
 
 void logBootStatus(bool ok) {
   const char compile_date[] = __DATE__ " " __TIME__;
@@ -39,23 +37,20 @@ void logStatus() {
 
 void setup() {
   Serial.begin(115200);
-  delay(100);
+  delay(200);
+  Serial.println();
   Serial.println("=========== Chicken door ===========");
   setupLEDs();
   setYellow(HIGH);
 
   delay(300);
-  WiFi.mode(
-      WIFI_OFF);  // Prevents reconnection issue (taking too long to connect)
+  WiFi.mode(WIFI_OFF);  // Prevents reconnection issue (taking too long to connect)
   delay(1000);
-  WiFi.mode(WIFI_STA);  // Only Station No AP, This line hides the viewing of
-                        // ESP as wifi hotspot
+  WiFi.mode(WIFI_STA);  // Only Station No AP, This line hides the viewing of ESP as wifi hotspot
   delay(300);
   Serial.println();
 
-  /// initialise watchdog to restart the device after N seconds, e.g. if https
-  /// client hangs as we often see
-  watchdog_start(90);
+  keepalive_watchdog_start(90);
 
   connectWifi();
   checkWifi();
@@ -68,54 +63,22 @@ void setup() {
   doorStateInit();
 
   // TEST CODE TO INJECT TIME TRIGGERS
-  /*
-  config.open_hour = timeClient.getHours();
-  config.close_hour = config.open_hour;
-  config.open_minutes = timeClient.getMinutes() + 1;
-  config.close_minutes = config.open_minutes + 2;
-  */
+  if (false) {
+    // open in 1 minute
+    config.open_hour = timeClient.getHours();
+    config.open_minutes = timeClient.getMinutes() + 1;
+    // close 2 minutes after open
+    config.close_hour = config.open_hour;
+    config.close_minutes = config.open_minutes + 2;
+  }
 
-  bool ok = configRefresh();
+  bool ok = configReload(config);
   timeClient.setTimeOffset(config.time_offset_hours * 3600);
   logBootStatus(ok);
 }
 
-unsigned long minutesSinceConfigUpdate() {
-  return (timeClient.getEpochTime() - unix_latest_config_update) / 60;
-}
-
-bool configIsTooOld() { return minutesSinceConfigUpdate() > 60; }
-
-bool configNeedsRefresh() {
-  int minutes = timeClient.getMinutes();
-  return (config.poll_interval_minutes > 0 &&
-          (minutes % config.poll_interval_minutes == 0 || configIsTooOld()));
-}
-
-bool configRefresh() {
-  // get config
-  if (getGoogleConfig(configTmp)) {
-    unix_latest_config_update = timeClient.getEpochTime();
-    sequential_config_failures = 0;
-    if (!config.equals(configTmp)) {
-      config = configTmp;
-      timeClient.setTimeOffset(config.time_offset_hours * 3600);
-      web_logger("Config", true, config.formatted());
-    }
-    return true;
-  } else {
-    sequential_config_failures++;
-    Serial.print(F("Config failed: "));
-    Serial.println(getConfigError().c_str());
-    if (sequential_config_failures % 10 == 0) {
-      web_logger("Config", false, getConfigError().c_str());
-    }
-    return false;
-  }
-}
-
 void loop() {
-  watchdog_reset();
+  keepalive();
   setYellow(HIGH);
 
   timeClient.update();
@@ -127,9 +90,7 @@ void loop() {
     setYellow(LOW);
     timeClient.printTime();
 
-    if (configNeedsRefresh()) {
-      configRefresh();
-    }
+    configReloadIfNeeded(config);
 
     if (config.force_open) {
       doorOpen();

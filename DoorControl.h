@@ -84,7 +84,7 @@ bool doorOpen() {
       break;
     }
     delay(LoopSleep);
-    watchdog_reset();
+    keepalive();
   }
   stopMove();
   setYellow(LOW);
@@ -126,7 +126,7 @@ bool doorClose() {
       break;
     }
     delay(LoopSleep);
-    watchdog_reset();
+    keepalive();
   }
   stopMove();
   setYellow(LOW);
